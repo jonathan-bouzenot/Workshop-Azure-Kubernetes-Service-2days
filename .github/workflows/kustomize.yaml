@@ -1,45 +1,11 @@
-name: 1. Deploiement d'une application avec Kustomize
-on:
-  workflow_dispatch:
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 
-env:
-  RG_NAME: "RG-AKS-Lab-10-JBT"
-  CLUSTER_NAME: "AKS-Lab-10"
+namespace: mon-namespace
+commonLabels:
+  app: mon-app
 
-
-jobs:
-  Deploy-App:
-    runs-on: ubuntu-latest
-
-    steps:
- 
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Login Azure
-        uses: Azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Get AKS Credentials
-        run: |
-          az aks get-credentials --resource-group ${{ env.RG_NAME }} --name ${{ env.CLUSTER_NAME }}
-
-      - name: Check kustomize initial
-        run: |
-          cd ./Lab_11/Manifest/ && kubectl kustomize ./base
-
-      - name: Modification du fichier ./Lab_11/Manifest/base/kustomization.yaml
-        run: |
-          cd ./Lab_11/Manifest/base/
-          sed -i -e "s/mon-namespace/test-kustomize/g" ./kustomization.yaml
-          sed -i -e "s/mon-app/http-test-kustomize/g" ./kustomization.yaml
-
-      - name: Check kustomize modifié
-        run: |
-          cd ./Lab_11/Manifest/ && kubectl kustomize ./base
-
-      - name: Application de la configuration
-        run: echo il ne reste plus ... !
-           
-              
+resources:
+  - service.yaml
+  - deployment.yaml
+  - namespace.yaml
